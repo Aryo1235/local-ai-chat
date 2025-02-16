@@ -1,5 +1,5 @@
 import { Moon, Plus, Sun } from "lucide-react";
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import {
   SidebarContent,
@@ -25,6 +25,7 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { db } from "~/lib/dexie";
 import { useLiveQuery } from "dexie-react-hooks";
+import { Link, useLocation } from "react-router";
 
 // const chatGroups = [
 //   { id: "1", name: "React Basics" },
@@ -35,11 +36,11 @@ import { useLiveQuery } from "dexie-react-hooks";
 // ];
 
 export const ChatSidebar = () => {
-  const [activeChat, setActiveChat] = useState<string | null>(null);
+  const [activeThread, setActiveThread] = useState("");
   const [dialogIsOpen, setDialogIsOpen] = useState(false);
   const [textInput, setTextInput] = useState("");
   const { setTheme, theme } = useTheme();
-
+  const location = useLocation();
   const handleToggleTheme = () => {
     if (theme === "dark") {
       setTheme("light");
@@ -55,7 +56,10 @@ export const ChatSidebar = () => {
     setDialogIsOpen(false);
     setTextInput("  ");
   };
-
+  useLayoutEffect(() => {
+    const acvtiveThreadId = location.pathname.split("/")[2];
+    setActiveThread(acvtiveThreadId);
+  }, [location.pathname]);
   return (
     <>
       <Dialog open={dialogIsOpen} onOpenChange={setDialogIsOpen}>
@@ -101,12 +105,11 @@ export const ChatSidebar = () => {
               <SidebarMenu>
                 {threads?.map((thread) => (
                   <SidebarMenuItem key={thread.id}>
-                    <SidebarMenuButton
-                      onClick={() => setActiveChat(thread.id)}
-                      isActive={activeChat === thread.id}
-                    >
-                      {thread.title}
-                    </SidebarMenuButton>
+                    <Link to={`/thread/${thread.id}`}>
+                      <SidebarMenuButton isActive={thread.id === activeThread}>
+                        {thread.title}
+                      </SidebarMenuButton>
+                    </Link>
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
