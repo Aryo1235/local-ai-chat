@@ -1,7 +1,8 @@
 import { ChatMessage } from "~/components/ChatMessage";
 import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
-
+import { useState } from "react";
+import ollama from "ollama";
 type Message = {
   role: "user" | "assistant";
   content: string;
@@ -16,10 +17,30 @@ const chatHistory: Message[] = [
       "React is a popular JavaScript library for building user interfaces. It was developed by Facebook and is widely used for creating interactive, efficient, and reusable UI components. React uses a virtual DOM (Document Object Model) to improve performance by minimizing direct manipulation of the actual DOM. It also introduces JSX, a syntax extension that allows you to write HTML-like code within JavaScript.",
   },
 ];
-const handleSubmit = () => {
-  alert("Message sent!");
-};
 export default function ChatPage() {
+  const [messsageInput, setMesssageInput] = useState("");
+  const [streamedMessages, setStreamedMessages] = useState("");
+
+  const handleSubmit = async () => {
+    const stream = await ollama.chat({
+      model: "deepseek-r1:1.5b",
+      messages: [
+        {
+          role: "user",
+          content: messsageInput.trim(),
+        },
+      ],
+      stream: true,
+    });
+
+    let fullContent = "";
+
+    for await (const part of stream) {
+      const messageContent = part.message.content;
+      fullContent += messageContent;
+      setStreamedMessages(fullContent);
+    }
+  };
   return (
     <>
       <div className="flex flex-col flex-1">
@@ -35,6 +56,10 @@ export default function ChatPage() {
                 content={message.content}
               />
             ))}
+
+            {!!streamedMessages && (
+              <ChatMessage role="assistant" content={streamedMessages} />
+            )}
           </div>
         </main>
         <footer className="border-t p-4">
@@ -43,6 +68,8 @@ export default function ChatPage() {
               className="flex-1"
               placeholder="Type your message here..."
               rows={5}
+              value={messsageInput}
+              onChange={(e) => setMesssageInput(e.target.value)}
             />
             <Button onClick={handleSubmit} type="button">
               Send
