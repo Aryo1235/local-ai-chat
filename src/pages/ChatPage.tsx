@@ -3,6 +3,7 @@ import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
 import { useState } from "react";
 import ollama from "ollama";
+import { ThoughtMessage } from "~/components/ThoughtMessage";
 type Message = {
   role: "user" | "assistant";
   content: string;
@@ -20,6 +21,7 @@ const chatHistory: Message[] = [
 export default function ChatPage() {
   const [messsageInput, setMesssageInput] = useState("");
   const [streamedMessages, setStreamedMessages] = useState("");
+  const [streamedThought, setStreamedThought] = useState("");
 
   const handleSubmit = async () => {
     const stream = await ollama.chat({
@@ -34,11 +36,34 @@ export default function ChatPage() {
     });
 
     let fullContent = "";
+    let fullThought = "";
+    //2 output mode
+    //1 mode mikir
+    //2 mode jawab
+
+    let outputMode: "think" | "response" = "think";
 
     for await (const part of stream) {
       const messageContent = part.message.content;
-      fullContent += messageContent;
-      setStreamedMessages(fullContent);
+      if (outputMode === "think") {
+        if (
+          !(
+            messageContent.includes("<think>") ||
+            messageContent.includes("</think>")
+          )
+        ) {
+          fullThought += messageContent;
+        }
+
+        setStreamedThought(fullThought);
+
+        if (messageContent.includes("</think>")) {
+          outputMode = "response";
+        }
+      } else {
+        fullContent += messageContent;
+        setStreamedMessages(fullContent);
+      }
     }
   };
   return (
@@ -56,7 +81,7 @@ export default function ChatPage() {
                 content={message.content}
               />
             ))}
-
+            {!!streamedThought && <ThoughtMessage thought={streamedThought} />}
             {!!streamedMessages && (
               <ChatMessage role="assistant" content={streamedMessages} />
             )}
