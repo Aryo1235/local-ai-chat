@@ -3,6 +3,7 @@ import { ChatSidebar } from "~/components/ChatSidebar";
 import { SidebarProvider } from "~/components/ui/sidebar";
 import { Route, Routes } from "react-router";
 import ChatPage from "./pages/ChatPage";
+import HomePage from "./pages/Homepage";
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -12,6 +13,7 @@ export default function App() {
       <div className="flex h-screen bg-background w-full">
         <ChatSidebar />
         <Routes>
+          <Route path="/" element={<HomePage />} />
           <Route path="/thread/:threadId" element={<ChatPage />} />
         </Routes>
       </div>
