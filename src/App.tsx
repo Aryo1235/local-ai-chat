@@ -3,7 +3,7 @@ import { ChatSidebar } from "~/components/ChatSidebar";
 import { SidebarProvider } from "~/components/ui/sidebar";
 import { Route, Routes } from "react-router";
 import ChatPage from "./pages/ChatPage";
-import HomePage from "./pages/Homepage";
+import HomePage from "./pages/HomePage";
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
